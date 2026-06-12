@@ -1,0 +1,58 @@
+/* All library styles live in the ic.base cascade layer, so any consumer CSS
+   declared outside a layer overrides them regardless of specificity or order. */
+@layer ic.base {
+  .root {
+    border: 1px solid var(--ic-border);
+    border-radius: var(--ic-radius);
+    background: var(--ic-surface);
+    font-family: var(--ic-font);
+  }
+
+  .heading {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .trigger {
+    font: inherit;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ic-space-2);
+    padding: var(--ic-space-2) var(--ic-space-3);
+    border: none;
+    background: none;
+    color: var(--ic-text);
+    cursor: pointer;
+    text-align: left;
+    font-weight: 600;
+  }
+
+  .trigger:focus-visible {
+    outline: none;
+    box-shadow: var(--ic-focus-ring);
+    border-radius: var(--ic-radius);
+  }
+
+  .icon {
+    flex: none;
+    fill: currentColor; /* inherits text color → works in high-contrast mode */
+  }
+
+  .content {
+    padding: 0 var(--ic-space-3) var(--ic-space-2);
+    color: var(--ic-text);
+    line-height: var(--ic-line);
+  }
+
+  /* Child margins (e.g. a <p>'s default 1em) otherwise stack on the padding and make
+     the section look far more padded than it is. */
+  .content > :first-child {
+    margin-top: 0;
+  }
+
+  .content > :last-child {
+    margin-bottom: 0;
+  }
+}

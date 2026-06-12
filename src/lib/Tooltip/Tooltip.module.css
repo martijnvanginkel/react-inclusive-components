@@ -1,0 +1,55 @@
+/* All library styles live in the ic.base cascade layer, so any consumer CSS
+   declared outside a layer overrides them regardless of specificity or order. */
+@layer ic.base {
+  .wrapper {
+    position: relative;
+    display: inline-flex;
+    font-family: var(--ic-font);
+  }
+
+  .tooltip {
+    position: absolute;
+    bottom: calc(100% + var(--ic-space-2));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    width: max-content;
+    max-width: 16rem;
+    padding: var(--ic-space-2) var(--ic-space-3);
+    border-radius: var(--ic-radius-sm);
+    background: var(--ic-text);
+    color: var(--ic-bg);
+    font-size: 0.875rem;
+    line-height: 1.4;
+    box-shadow: var(--ic-shadow);
+    pointer-events: none;
+
+    /* Hidden by default; shown when open. visibility keeps it out of the a11y tree
+       visually while aria-labelledby can still resolve its text. */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.12s ease;
+  }
+
+  .tooltip[data-open='true'] {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* little arrow */
+  .tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: var(--ic-text);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tooltip {
+      transition: none;
+    }
+  }
+}

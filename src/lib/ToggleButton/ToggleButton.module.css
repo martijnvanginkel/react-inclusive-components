@@ -1,0 +1,87 @@
+/* All library styles live in the ic.base cascade layer, so any consumer CSS
+   declared outside a layer overrides them regardless of specificity or order. */
+@layer ic.base {
+  .toggle {
+    font: inherit;
+    font-family: var(--ic-font);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ic-space-2);
+    padding: var(--ic-space-2) var(--ic-space-4);
+    border: 1px solid var(--ic-border);
+    border-radius: var(--ic-radius);
+    background: var(--ic-surface);
+    color: var(--ic-text);
+    cursor: pointer;
+    line-height: var(--ic-line);
+  }
+
+  .toggle:focus-visible {
+    outline: none;
+    box-shadow: var(--ic-focus-ring);
+  }
+
+  /* Pressed state for the plain button variant — communicated visually AND via aria-pressed. */
+  .toggle[aria-pressed='true'] {
+    background: var(--ic-accent);
+    border-color: var(--ic-accent);
+    color: var(--ic-accent-text);
+  }
+
+  /* --- switch variant --- */
+  .switch {
+    border: none;
+    background: none;
+    padding: var(--ic-space-1) 0;
+  }
+
+  .switch:focus-visible {
+    outline: none;
+    box-shadow: none;
+  }
+
+  .switch:focus-visible .track {
+    box-shadow: var(--ic-focus-ring);
+  }
+
+  .label {
+    color: var(--ic-text);
+  }
+
+  .track {
+    position: relative;
+    width: 2.5rem;
+    height: 1.4rem;
+    border-radius: 1rem;
+    background: var(--ic-border);
+    transition: background 0.15s ease;
+    flex: none;
+  }
+
+  .thumb {
+    position: absolute;
+    top: 0.15rem;
+    left: 0.15rem;
+    width: 1.1rem;
+    height: 1.1rem;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    transition: transform 0.15s ease;
+  }
+
+  .switch[aria-checked='true'] .track {
+    background: var(--ic-accent);
+  }
+
+  .switch[aria-checked='true'] .thumb {
+    transform: translateX(1.1rem);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .track,
+    .thumb {
+      transition: none;
+    }
+  }
+}

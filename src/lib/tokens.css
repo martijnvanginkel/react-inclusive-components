@@ -1,0 +1,42 @@
+/* All library styles live in the ic.base cascade layer, so any consumer CSS
+   declared outside a layer overrides them regardless of specificity or order. */
+@layer ic.base {
+  /* Design tokens shared across all library components.
+     Imported once (via src/lib/index.ts). Components reference these with var(--…)
+     and degrade gracefully if a consumer hasn't loaded them. */
+  :root {
+    /* Spacing scale */
+    --ic-space-1: 0.25rem;
+    --ic-space-2: 0.5rem;
+    --ic-space-3: 0.75rem;
+    --ic-space-4: 1rem;
+    --ic-space-5: 1.5rem;
+    --ic-space-6: 2rem;
+
+    /* Radius */
+    --ic-radius: 0.5rem;
+    --ic-radius-sm: 0.25rem;
+
+    /* Color — deliberately monochrome / plain. */
+    --ic-bg: #ffffff;
+    --ic-surface: #ffffff;
+    --ic-text: #111111;
+    --ic-text-muted: #555555;
+    --ic-border: #cccccc;
+    --ic-accent: #111111; /* active/selected states use near-black, not a bright hue */
+    --ic-accent-text: #ffffff;
+    --ic-accent-weak: #eeeeee;
+    --ic-danger: #8b0000;
+
+    /* Focus ring — used by every focusable control */
+    --ic-focus-ring: 0 0 0 2px var(--ic-bg), 0 0 0 4px var(--ic-text);
+
+    /* Typography */
+    --ic-font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --ic-line: 1.5;
+
+    /* Elevation */
+    --ic-shadow: 0 1px 2px rgba(20, 20, 40, 0.08), 0 4px 12px rgba(20, 20, 40, 0.08);
+    --ic-shadow-lg: 0 8px 30px rgba(20, 20, 40, 0.18);
+  }
+}

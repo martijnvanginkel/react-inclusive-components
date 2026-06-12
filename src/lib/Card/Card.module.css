@@ -1,0 +1,113 @@
+/* All library styles live in the ic.base cascade layer, so any consumer CSS
+   declared outside a layer overrides them regardless of specificity or order. */
+@layer ic.base {
+  .grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: var(--ic-space-5);
+    font-family: var(--ic-font);
+  }
+
+  .card {
+    position: relative; /* containing block for the stretched title link */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--ic-border);
+    border-radius: var(--ic-radius-sm);
+    background: var(--ic-surface);
+    color: var(--ic-text);
+  }
+
+  .card:hover,
+  .card:focus-within {
+    border-color: var(--ic-text);
+  }
+
+  .media {
+    aspect-ratio: 16 / 9;
+    background: var(--ic-accent-weak);
+  }
+
+  .img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .body {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    gap: var(--ic-space-2);
+    padding: var(--ic-space-4);
+  }
+
+  .title {
+    margin: 0;
+    font-size: 1.125rem;
+  }
+
+  .titleLink {
+    color: var(--ic-text);
+    text-decoration: none;
+  }
+
+  .titleLink:focus-visible {
+    outline: none;
+  }
+
+  /* The whole-card click target. */
+  .titleLink::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .card:focus-within .titleLink {
+    text-decoration: underline;
+  }
+
+  .description {
+    margin: 0;
+    color: var(--ic-text-muted);
+    line-height: var(--ic-line);
+    max-width: 60ch;
+  }
+
+  /* Pinned to the bottom of the card rather than floating under the description. */
+  .cta {
+    margin-top: auto;
+    padding-top: var(--ic-space-1);
+    font-weight: 600;
+    color: var(--ic-accent);
+  }
+
+  /* Push attribution to the bottom regardless of content length. */
+  .secondary {
+    margin-top: auto;
+    padding-top: var(--ic-space-2);
+    color: var(--ic-text-muted);
+  }
+
+  /* When both are present the CTA's auto margin already did the pushing —
+     keep the attribution snug beneath it instead of splitting the free space. */
+  .cta + .secondary {
+    margin-top: 0;
+  }
+
+  /* Secondary link sits above the stretched title link so it stays clickable,
+     with a larger hit area. */
+  .secondaryLink {
+    position: relative;
+    z-index: 1;
+    display: inline-block;
+    padding: var(--ic-space-1) var(--ic-space-2);
+    margin: calc(-1 * var(--ic-space-1)) calc(-1 * var(--ic-space-2));
+    color: var(--ic-accent);
+  }
+}
