@@ -76,7 +76,7 @@
     text-align: center;
   }
 
-  .check[data-checked='true']::before {
+  .check[data-ic-state='checked']::before {
     content: '✓';
     color: var(--ic-accent);
   }

@@ -45,9 +45,7 @@ const PLACEHOLDER =
  */
 export function ContentSlider({ label, slides }: ContentSliderProps) {
   const baseId = useId();
-  const hoverId = `${baseId}-hover`;
   const focusId = `${baseId}-focus`;
-  const touchId = `${baseId}-touch`;
 
   const scrollerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
@@ -56,9 +54,10 @@ export function ContentSlider({ label, slides }: ContentSliderProps) {
   // Feature-detect per render so the fallback path (no IO → load everything, no buttons)
   // stays testable.
   const hasIO = typeof window !== 'undefined' && 'IntersectionObserver' in window;
-  const [loaded, setLoaded] = useState<ReadonlySet<number>>(
-    () => new Set(hasIO ? [] : slides.map((_, i) => i)),
-  );
+  const [loaded, setLoaded] = useState<ReadonlySet<number>>(() => new Set());
+  // Without IntersectionObserver every slide loads immediately (CS-6) — derived, not
+  // seeded into state, so slides added after mount load too.
+  const isLoaded = (i: number) => !hasIO || loaded.has(i);
   const [isTouch, setIsTouch] = useState(false);
 
   // Lazy-load images and manage link tabindex as slides enter/leave view (CS-6/CS-8).
@@ -112,10 +111,10 @@ export function ContentSlider({ label, slides }: ContentSliderProps) {
       >
         <ul ref={listRef} {...slot('list', styles.list)}>
           {slides.map((slide, i) => (
-            <li key={i} {...slot('slide', styles.slide, loaded.has(i) ? 'loaded' : undefined)}>
+            <li key={i} {...slot('slide', styles.slide, isLoaded(i) ? 'loaded' : undefined)}>
               <figure {...slot('figure', styles.figure)}>
                 <img
-                  src={loaded.has(i) ? slide.src : PLACEHOLDER}
+                  src={isLoaded(i) ? slide.src : PLACEHOLDER}
                   data-src={slide.src}
                   alt={slide.alt}
                   {...slot('image', styles.image)}
@@ -132,13 +131,13 @@ export function ContentSlider({ label, slides }: ContentSliderProps) {
       {/* Input-appropriate usage instructions; CSS reveals the right one (CS-4). The focus
           instruction is the region's accessible description. */}
       <div {...slot('instructions', styles.instructions)} data-touch={isTouch || undefined}>
-        <p id={hoverId} {...slot('instruction', styles.hoverInstruction)} aria-hidden="true">
+        <p {...slot('instruction', styles.hoverInstruction)} aria-hidden="true">
           scroll for more
         </p>
         <p id={focusId} {...slot('instruction', styles.focusInstruction)}>
           use your arrow keys for more
         </p>
-        <p id={touchId} {...slot('instruction', styles.touchInstruction)} aria-hidden="true">
+        <p {...slot('instruction', styles.touchInstruction)} aria-hidden="true">
           swipe for more
         </p>
       </div>

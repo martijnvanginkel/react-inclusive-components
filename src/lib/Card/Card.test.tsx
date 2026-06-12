@@ -54,6 +54,16 @@ describe('Card', () => {
     expect(img).toHaveAttribute('alt', '');
   });
 
+  it('CD-7: the image comes AFTER the heading in source order (visual order is CSS)', () => {
+    render(
+      <Card title="My post" href="/post" image={{ src: '/x.jpg', alt: 'A red bicycle' }} />,
+    );
+    const heading = screen.getByRole('heading', { name: 'My post' });
+    const img = screen.getByRole('img', { name: 'A red bicycle' });
+    // AT reads the title first, then the image — not image-first.
+    expect(heading.compareDocumentPosition(img) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('CD-12: a card exposes at most the title + secondary links (minimal tab stops)', () => {
     render(
       <Card title="My post" href="/post" cta="Read more" secondary={{ label: 'By Ada', href: '/ada' }} />,

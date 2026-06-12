@@ -30,6 +30,8 @@
   .media {
     aspect-ratio: 16 / 9;
     background: var(--ic-accent-weak);
+    /* Source order puts the image after the heading (CD-7); show it on top visually. */
+    order: -1;
   }
 
   .img {

@@ -9,7 +9,10 @@ import {
   type KeyboardEvent,
 } from 'react';
 import { useControllableState } from '../shared/useControllableState';
+import { useEscapeKey } from '../shared/useEscapeKey';
+import { useLatestRef } from '../shared/useLatestRef';
 import { useOnClickOutside } from '../shared/useOnClickOutside';
+import { sortByDomPosition } from '../shared/dom';
 import { makeSlots } from '../shared/slots';
 import styles from './MenuButton.module.css';
 
@@ -65,10 +68,7 @@ export function MenuButton({
 
   // Latest-ref for onChoose: the context (and thus `choose`) is memoized and, for an
   // actions menu, never recomputes — so read the current handler at call time, not a frozen one.
-  const onChooseRef = useRef(onChoose);
-  useEffect(() => {
-    onChooseRef.current = onChoose;
-  });
+  const onChooseRef = useLatestRef(onChoose);
 
   const rootRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -84,12 +84,7 @@ export function MenuButton({
     [],
   );
 
-  const itemsInDomOrder = () =>
-    items.current
-      .slice()
-      .sort((a, b) =>
-        a.el.compareDocumentPosition(b.el) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1,
-      );
+  const itemsInDomOrder = () => sortByDomPosition(items.current, (i) => i.el);
 
   const openMenu = (intent: 'first' | 'last' | 'checked') => {
     focusIntent.current = intent;
@@ -120,6 +115,11 @@ export function MenuButton({
 
   useOnClickOutside(rootRef, () => closeMenu(false), open);
 
+  // Fallback for when focus is neither on the trigger nor an item (e.g. a click on the
+  // menu's padding moved focus to <body>): Escape must still close the menu (MB-9).
+  // The element-scoped handlers below claim their events first, so this never doubles up.
+  useEscapeKey(() => closeMenu(true), open);
+
   const choose = (itemValue: string) => {
     if (type === 'radio') setChecked(itemValue);
     onChooseRef.current?.(itemValue);
@@ -137,6 +137,13 @@ export function MenuButton({
       case 'ArrowUp':
         event.preventDefault();
         openMenu('last');
+        break;
+      case 'Escape':
+        // The menu can be open while the trigger keeps focus (e.g. every item disabled).
+        if (open) {
+          event.preventDefault();
+          closeMenu(true);
+        }
         break;
     }
   };
@@ -171,8 +178,11 @@ export function MenuButton({
         closeMenu(true);
         break;
       case 'Tab':
-        // Tab exits the menu without traversing items.
-        closeMenu(false);
+        // Tab exits the menu without traversing items (MB-12). Refocus the trigger
+        // BEFORE the default Tab action runs: the focused item unmounts with the menu,
+        // and sequential focus navigation from a removed node would drop focus to the
+        // top of the page instead of the element after the trigger.
+        closeMenu(true);
         break;
     }
   };
@@ -242,7 +252,10 @@ function MenuItem({ value, children, disabled }: MenuItemProps) {
       onClick={() => ctx.choose(value)}
     >
       {isRadio && (
-        <span {...slot('check', styles.check)} aria-hidden="true" data-checked={isChecked} />
+        <span
+          {...slot('check', styles.check, isChecked ? 'checked' : 'unchecked')}
+          aria-hidden="true"
+        />
       )}
       <span>{children}</span>
     </button>

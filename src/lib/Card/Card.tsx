@@ -52,11 +52,6 @@ export function Card({
 
   return (
     <li {...slot('root', styles.card)}>
-      {image && (
-        <div {...slot('media', styles.media)}>
-          <img src={image.src} alt={image.alt} {...slot('img', styles.img)} />
-        </div>
-      )}
       <div {...slot('body', styles.body)}>
         <Heading {...slot('title', styles.title)}>
           <a
@@ -81,6 +76,13 @@ export function Card({
           </small>
         )}
       </div>
+      {/* After the heading in source order so AT reads title-first; CSS `order` puts it
+          visually on top (CD-7). */}
+      {image && (
+        <div {...slot('media', styles.media)}>
+          <img src={image.src} alt={image.alt} {...slot('img', styles.img)} />
+        </div>
+      )}
     </li>
   );
 }

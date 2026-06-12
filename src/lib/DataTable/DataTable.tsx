@@ -11,12 +11,20 @@ type DataTablePart =
   | 'table'
   | 'caption'
   | 'hint'
+  | 'head'
+  | 'body'
+  | 'row'
   | 'headerCell'
   | 'sortButton'
   | 'sortIcon'
   | 'rowHeader'
   | 'cell'
-  | 'stack';
+  | 'stack'
+  | 'stackGroup'
+  | 'stackHeading'
+  | 'stackList'
+  | 'stackTerm'
+  | 'stackValue';
 
 export interface DataTableProps {
   /** Table label, rendered as a <caption>. */
@@ -57,14 +65,20 @@ export function DataTable({
   const slot = makeSlots<DataTablePart>();
 
   // Copy before sorting — the consumer's array must never be mutated (DT-8).
+  // The comparator must be transitive even for mixed columns (DT-11): numbers compare
+  // numerically and sort before strings; strings use numeric-aware collation so
+  // ['2', '10'] orders naturally instead of lexicographically.
   const sortedRows = useMemo(() => {
     if (!sort) return rows;
     const copy = rows.slice(0);
     copy.sort((a, b) => {
       const x = a[sort.col];
       const y = b[sort.col];
-      const cmp =
-        typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y));
+      let cmp: number;
+      if (typeof x === 'number' && typeof y === 'number') cmp = x - y;
+      else if (typeof x === 'number') cmp = -1;
+      else if (typeof y === 'number') cmp = 1;
+      else cmp = x.localeCompare(y, undefined, { numeric: true });
       return sort.dir === 'ascending' ? cmp : -cmp;
     });
     return copy;
@@ -91,12 +105,8 @@ export function DataTable({
     update();
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
-  }, [captionId]);
-
-  const toggleSort = (col: number) => {
-    const dir: SortDir = sort?.col === col && sort.dir === 'ascending' ? 'descending' : 'ascending';
-    setSort({ col, dir });
-  };
+    // rows/headers: new data can change the table's width without a window resize.
+  }, [captionId, rows, headers]);
 
   return (
     <div {...slot('root', styles.root)}>
@@ -109,15 +119,14 @@ export function DataTable({
               (scroll to see more)
             </span>
           </caption>
-          <thead>
-            <tr>
+          <thead {...slot('head')}>
+            <tr {...slot('row')}>
               {headers.map((header, col) => {
                 const dir = sort?.col === col ? sort.dir : 'none';
-                const next: SortDir =
-                  sort?.col === col && sort.dir === 'ascending' ? 'descending' : 'ascending';
+                const next: SortDir = dir === 'ascending' ? 'descending' : 'ascending';
                 return (
                   <th
-                    key={header}
+                    key={col}
                     scope="col"
                     {...(sortable
                       ? { role: 'columnheader', 'aria-sort': dir }
@@ -128,7 +137,7 @@ export function DataTable({
                       <button
                         type="button"
                         aria-label={`sort by ${header} in ${next} order`}
-                        onClick={() => toggleSort(col)}
+                        onClick={() => setSort({ col, dir: next })}
                         {...slot('sortButton', styles.sortButton)}
                       >
                         {header}
@@ -144,9 +153,9 @@ export function DataTable({
               })}
             </tr>
           </thead>
-          <tbody>
+          <tbody {...slot('body')}>
             {sortedRows.map((row, i) => (
-              <tr key={i}>
+              <tr key={i} {...slot('row')}>
                 {row.map((value, j) =>
                   rowHeaders && j === 0 ? (
                     <th key={j} scope="row" {...slot('rowHeader', styles.rowHeader)}>
@@ -168,14 +177,14 @@ export function DataTable({
           breakpoint (DT-9). The hidden version is display:none → out of the a11y tree. */}
       <div {...slot('stack', styles.stack)}>
         {sortedRows.map((row, i) => (
-          <div key={i} className={styles.stackGroup}>
-            {rowHeaders && <h3 className={styles.stackHeading}>{row[0]}</h3>}
-            <dl className={styles.stackList}>
+          <div key={i} {...slot('stackGroup', styles.stackGroup)}>
+            {rowHeaders && <h3 {...slot('stackHeading', styles.stackHeading)}>{row[0]}</h3>}
+            <dl {...slot('stackList', styles.stackList)}>
               {headers.map((header, j) =>
                 rowHeaders && j === 0 ? null : (
                   <Fragment key={j}>
-                    <dt>{header}</dt>
-                    <dd>{row[j]}</dd>
+                    <dt {...slot('stackTerm')}>{header}</dt>
+                    <dd {...slot('stackValue')}>{row[j]}</dd>
                   </Fragment>
                 ),
               )}

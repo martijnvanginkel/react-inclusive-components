@@ -1,13 +1,16 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useId,
   useLayoutEffect,
   useMemo,
   useRef,
+  useState,
   type KeyboardEvent,
 } from 'react';
 import { useControllableState } from '../shared/useControllableState';
+import { sortByDomPosition } from '../shared/dom';
 import { makeSlots } from '../shared/slots';
 import styles from './Tabs.module.css';
 
@@ -19,9 +22,8 @@ interface TabsContextValue {
   label: string;
   selected: string;
   select: (value: string) => void;
-  /** Register/unregister a tab so the list knows DOM order for arrow-key nav. */
-  register: (value: string) => () => void;
-  order: React.RefObject<string[]>;
+  /** Tab values in DOM order (not mount order) — the basis for arrow-key nav. */
+  orderedTabs: () => string[];
   tabRefs: React.RefObject<Map<string, HTMLButtonElement>>;
   panelRefs: React.RefObject<Map<string, HTMLDivElement>>;
 }
@@ -55,7 +57,6 @@ export interface TabsProps {
  */
 export function Tabs({ value, defaultValue = '', onValueChange, label, children }: TabsProps) {
   const baseId = useId();
-  const order = useRef<string[]>([]);
   const tabRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const panelRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
@@ -65,38 +66,46 @@ export function Tabs({ value, defaultValue = '', onValueChange, label, children 
     onChange: onValueChange,
   });
 
-  const register = useMemo(
-    () => (val: string) => {
-      if (!order.current.includes(val)) order.current.push(val);
-      return () => {
-        order.current = order.current.filter((v) => v !== val);
-      };
-    },
+  // Tab order comes from the rendered DOM, not registration order, so tabs inserted or
+  // reordered later still navigate in visual order.
+  const orderedTabs = useCallback(
+    () =>
+      sortByDomPosition(Array.from(tabRefs.current.keys()), (v) => tabRefs.current.get(v)),
     [],
   );
 
-  // After tabs register (their layout effects run before this parent one), if nothing
-  // valid is selected, fall back to the first tab. Runs before paint → no flash.
+  // Uncontrolled with nothing (or a removed tab) selected: fall back to the first tab
+  // WITHOUT firing onValueChange — no user interaction happened. Tab refs are attached
+  // by the time this parent layout effect runs; before paint → no flash. The effect is
+  // deliberately dep-less (registration changes don't show up in any dep), and only
+  // updates state when the fallback actually changes.
+  const [autoSelected, setAutoSelected] = useState<string | null>(null);
+  // Deliberately dep-less: tab registration changes (insert/remove) don't appear in any
+  // dependency, so the fallback must be re-checked after every render.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useLayoutEffect(() => {
     if (value !== undefined) return; // controlled: parent owns selection
-    if (!selected || !order.current.includes(selected)) {
-      const first = order.current[0];
-      if (first) setSelected(first);
-    }
+    const tabs = orderedTabs();
+    const valid = selected !== '' && tabs.includes(selected);
+    const next = valid ? null : (tabs[0] ?? null);
+    // Guarded sync of DOM-derived state: only sets when the fallback actually changes,
+    // so it cannot cascade.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setAutoSelected((prev) => (prev === next ? prev : next));
   });
+  const active = value !== undefined ? selected : (autoSelected ?? selected);
 
   const ctx = useMemo<TabsContextValue>(
     () => ({
       baseId,
       label,
-      selected,
+      selected: active,
       select: setSelected,
-      register,
-      order,
+      orderedTabs,
       tabRefs,
       panelRefs,
     }),
-    [baseId, label, selected, setSelected, register],
+    [baseId, label, active, setSelected, orderedTabs],
   );
 
   const slot = makeSlots<TabsPart>();
@@ -117,11 +126,12 @@ export interface TabsListProps {
 }
 
 function TabsList({ label, children }: TabsListProps) {
-  const { order, tabRefs, selected, select, panelRefs, label: ctxLabel } = useTabs('Tabs.List');
+  const { orderedTabs, tabRefs, selected, select, panelRefs, label: ctxLabel } =
+    useTabs('Tabs.List');
   const slot = makeSlots<TabsPart>();
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    const tabs = order.current;
+    const tabs = orderedTabs();
     if (tabs.length === 0) return;
     const current = tabs.indexOf(selected);
     let next: number;
@@ -167,11 +177,9 @@ export interface TabProps {
 }
 
 function Tab({ value, children }: TabProps) {
-  const { baseId, selected, select, register, tabRefs } = useTabs('Tabs.Tab');
+  const { baseId, selected, select, tabRefs } = useTabs('Tabs.Tab');
   const isSelected = selected === value;
   const slot = makeSlots<TabsPart>();
-
-  useLayoutEffect(() => register(value), [register, value]);
 
   return (
     <button

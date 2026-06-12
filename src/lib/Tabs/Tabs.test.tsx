@@ -119,6 +119,45 @@ describe('Tabs', () => {
     expect(profileTab).toHaveFocus();
   });
 
+  it('(regression) mounting without defaultValue selects the first tab WITHOUT firing onValueChange', () => {
+    const onValueChange = vi.fn();
+    render(
+      <Tabs label="t" onValueChange={onValueChange}>
+        <Tabs.List>
+          <Tabs.Tab value="a">A</Tabs.Tab>
+          <Tabs.Tab value="b">B</Tabs.Tab>
+        </Tabs.List>
+        <Tabs.Panel value="a">a</Tabs.Panel>
+        <Tabs.Panel value="b">b</Tabs.Panel>
+      </Tabs>,
+    );
+    expect(screen.getByRole('tab', { name: 'A' })).toHaveAttribute('aria-selected', 'true');
+    // No user interaction happened — change events are user-initiated only.
+    expect(onValueChange).not.toHaveBeenCalled();
+  });
+
+  it('(regression) arrow keys follow DOM order when a tab is inserted later', async () => {
+    const user = userEvent.setup();
+    const makeTabs = (withInserted: boolean) => (
+      <Tabs label="t" defaultValue="a">
+        <Tabs.List>
+          <Tabs.Tab value="a">A</Tabs.Tab>
+          {withInserted && <Tabs.Tab value="x">X</Tabs.Tab>}
+          <Tabs.Tab value="b">B</Tabs.Tab>
+        </Tabs.List>
+        <Tabs.Panel value="a">a</Tabs.Panel>
+        {withInserted && <Tabs.Panel value="x">x</Tabs.Panel>}
+        <Tabs.Panel value="b">b</Tabs.Panel>
+      </Tabs>
+    );
+    const { rerender } = render(makeTabs(false));
+    rerender(makeTabs(true)); // X mounts AFTER a/b but sits between them in the DOM
+    screen.getByRole('tab', { name: 'A' }).focus();
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByRole('tab', { name: 'X' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'X' })).toHaveFocus();
+  });
+
   it('clicking a tab selects it', async () => {
     const user = userEvent.setup();
     renderTabs();

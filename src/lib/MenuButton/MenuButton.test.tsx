@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { MenuButton } from './MenuButton';
@@ -84,6 +84,23 @@ describe('MenuButton', () => {
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
+  it('MB-12 (regression): closing via Tab refocuses the trigger before the default Tab action', async () => {
+    const user = userEvent.setup();
+    render(<ActionsMenu />);
+    screen.getByRole('button', { name: /Actions/ }).focus();
+    await user.keyboard('{ArrowDown}');
+    const item = screen.getByRole('menuitem', { name: 'Edit' });
+    expect(item).toHaveFocus();
+    // The focused item unmounts with the menu. Focus must land on the trigger during
+    // the keydown, so the browser's default Tab action continues from the trigger —
+    // not from a removed node (which drops focus to the top of the page).
+    // fireEvent (not user.tab): user-event simulates Tab from the dispatch target,
+    // which can't model the browser's post-handler focus computation.
+    fireEvent.keyDown(item, { key: 'Tab' });
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Actions/ })).toHaveFocus();
+  });
+
   it('MB-10/MB-16: Down arrow navigates with wrap and skips disabled items', async () => {
     const user = userEvent.setup();
     render(<ActionsMenu />);
@@ -111,6 +128,28 @@ describe('MenuButton', () => {
     render(<ActionsMenu />);
     const btn = screen.getByRole('button', { name: /Actions/ });
     await user.click(btn);
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(btn).toHaveFocus();
+  });
+
+  it('MB-9: Escape ON THE BUTTON closes an open menu (e.g. every item disabled)', async () => {
+    const user = userEvent.setup();
+    render(
+      <MenuButton label="Actions">
+        <MenuButton.Item value="a" disabled>
+          A
+        </MenuButton.Item>
+        <MenuButton.Item value="b" disabled>
+          B
+        </MenuButton.Item>
+      </MenuButton>,
+    );
+    const btn = screen.getByRole('button', { name: /Actions/ });
+    // Disabled items never register, so opening leaves focus on the trigger.
+    await user.click(btn);
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+    expect(btn).toHaveFocus();
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     expect(btn).toHaveFocus();
@@ -170,9 +209,15 @@ describe('MenuButton', () => {
       const oldest = screen.getByRole('menuitemradio', { name: 'Oldest' });
       expect(newest).toHaveAttribute('aria-checked', 'true');
       expect(oldest).toHaveAttribute('aria-checked', 'false');
-      // MB-7: a visible checkmark element accompanies aria-checked (✓ via CSS on data-checked)
-      expect(newest.querySelector('[data-ic-part="check"]')).toHaveAttribute('data-checked', 'true');
-      expect(oldest.querySelector('[data-ic-part="check"]')).toHaveAttribute('data-checked', 'false');
+      // MB-7: a visible checkmark element accompanies aria-checked (✓ via CSS on data-ic-state)
+      expect(newest.querySelector('[data-ic-part="check"]')).toHaveAttribute(
+        'data-ic-state',
+        'checked',
+      );
+      expect(oldest.querySelector('[data-ic-part="check"]')).toHaveAttribute(
+        'data-ic-state',
+        'unchecked',
+      );
     });
 
     it('MB-15: choosing updates checked state and the button label', async () => {

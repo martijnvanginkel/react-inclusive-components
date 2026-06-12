@@ -26,8 +26,9 @@ from [Inclusive Components](https://inclusive-components.design/). React 19 + Ty
 ## Layout
 
 - `src/lib/` — the library. One folder per component (`Component.tsx`, `Component.module.css`,
-  `Component.test.tsx`, `index.ts`); `shared/` has `mergeProps`/`composeRefs` (props.ts),
-  `makeSlots` (slots.ts), `useControllableState`, `useEscapeKey`, `useOnClickOutside`, `cx`.
+  `Component.test.tsx`, `index.ts`); `shared/` has `mergeProps`/`stripReserved` (props.ts),
+  `makeSlots` (slots.ts), `sortByDomPosition` (dom.ts), `useControllableState`,
+  `useEscapeKey`, `useOnClickOutside`, `useLatestRef`, `cx`.
   `src/lib/index.ts` is the public barrel. Never import from `src/showcase/`.
 - `src/showcase/` — demo app: tiny hash router (`useHashRoute`), `registry.ts` (one entry per
   component), `sections/*Demo.tsx` (one plain default demo per component — keep demos minimal).

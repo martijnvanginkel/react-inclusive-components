@@ -84,12 +84,12 @@ selector: `.my-sidebar [data-ic-part="tab"] { … }`.
 | `Tabs` | `root`, `list`, `tab`, `panel` | `tab`: `selected`; `panel`: `selected` / `hidden` |
 | `Tooltip` | `root`, `tooltip` | `tooltip`: `open` / `closed` |
 | `Toggletip` | `root`, `trigger`, `bubble` | `trigger`, `bubble`: `open` / `closed` |
-| `MenuButton` | `root`, `trigger`, `caret`, `menu`, `item`, `check` | `trigger`: `open` / `closed`; `item`: `checked` / `disabled` |
+| `MenuButton` | `root`, `trigger`, `caret`, `menu`, `item`, `check` | `trigger`: `open` / `closed`; `item`: `checked` / `disabled`; `check`: `checked` / `unchecked` |
 | `Card` | `root`, `media`, `img`, `body`, `title`, `titleLink`, `description`, `cta`, `secondary`, `secondaryLink` | — |
 | `CardGrid` | `grid` | — |
-| `TodoList` | `root`, `heading`, `form`, `input`, `addButton`, `list`, `item`, `checkbox`, `itemLabel`, `deleteButton`, `emptyState` | `item`: `done` |
+| `TodoList` | `root`, `heading`, `form`, `input`, `addButton`, `list`, `item`, `checkbox`, `itemLabel`, `deleteButton`, `emptyState`, `liveRegion` | `item`: `done` |
 | `ContentSlider` | `root`, `scroller`, `list`, `slide`, `figure`, `image`, `caption`, `instructions`, `instruction`, `controls`, `controlButton` | `slide`: `loaded` |
-| `DataTable` | `root`, `scroller`, `table`, `caption`, `hint`, `headerCell`, `sortButton`, `sortIcon`, `rowHeader`, `cell`, `stack` | `headerCell`: `ascending` / `descending` |
+| `DataTable` | `root`, `scroller`, `table`, `caption`, `hint`, `head`, `body`, `row`, `headerCell`, `sortButton`, `sortIcon`, `rowHeader`, `cell`, `stack`, `stackGroup`, `stackHeading`, `stackList`, `stackTerm`, `stackValue` | `headerCell`: `ascending` / `descending` |
 | `NotificationProvider` | `region`, `list`, `item`, `prefix` | `item`: `info` / `success` / `warning` / `error` |
 
 ---
@@ -97,9 +97,11 @@ selector: `.my-sidebar [data-ic-part="tab"] { … }`.
 ## What you can't do (on purpose)
 
 - You can't pass `className`, `classNames`, or `style` — components don't accept them.
-- You can't pass `role`, `aria-*`, `tabindex`, or `type` where native props are forwarded
+- You can't pass `role`, `type`, `tabIndex`, `aria-hidden`, or the state attributes the
+  component manages (e.g. `aria-pressed`/`aria-checked`) where native props are forwarded
   (e.g. `ToggleButton`) — the TypeScript types omit them, and even a forced (cast) override
-  is ignored at runtime because library props win on collision.
+  is stripped at runtime. Labelling attributes (`aria-label`, `aria-labelledby`,
+  `aria-describedby`) stay open: naming a control is your job (see TB-5/TB-6).
 - You can't replace the keyboard/focus handlers — forwarded handlers are chained, not
   substituted.
 - You can't restructure the internal DOM — only style the parts that exist.

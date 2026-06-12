@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useLatestRef } from './useLatestRef';
 
 /**
  * Supports both controlled and uncontrolled usage of a single piece of state.
@@ -17,10 +18,23 @@ export function useControllableState<T>(options: {
   const isControlled = controlled !== undefined;
 
   const [internal, setInternal] = useState<T>(defaultValue);
-  const onChangeRef = useRef(onChange);
+  const onChangeRef = useLatestRef(onChange);
+
+  // While controlled, the internal copy stays frozen at its initial value — so flipping
+  // to uncontrolled silently snaps back to stale state. Surface that in dev instead of
+  // failing silently (the standard library behavior: warn, don't sync).
+  const wasControlled = useRef(isControlled);
   useEffect(() => {
-    onChangeRef.current = onChange;
-  });
+    if (import.meta.env.DEV && wasControlled.current !== isControlled) {
+      console.warn(
+        `useControllableState: a component switched from ${
+          wasControlled.current ? 'controlled to uncontrolled' : 'uncontrolled to controlled'
+        }. Decide between controlled (always pass a defined value) and uncontrolled ` +
+          'for the lifetime of the component — switching desyncs the displayed state.',
+      );
+    }
+    wasControlled.current = isControlled;
+  }, [isControlled]);
 
   const value = isControlled ? (controlled as T) : internal;
 
@@ -29,7 +43,7 @@ export function useControllableState<T>(options: {
       if (!isControlled) setInternal(next);
       onChangeRef.current?.(next);
     },
-    [isControlled],
+    [isControlled, onChangeRef],
   );
 
   return [value, setValue];

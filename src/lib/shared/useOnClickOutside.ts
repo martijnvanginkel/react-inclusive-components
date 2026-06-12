@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
+import { useLatestRef } from './useLatestRef';
 
 /**
  * Calls `handler` when a pointerdown/focusin occurs outside the referenced element.
@@ -9,10 +10,7 @@ export function useOnClickOutside<T extends HTMLElement>(
   handler: (event: Event) => void,
   enabled = true,
 ) {
-  const handlerRef = useRef(handler);
-  useEffect(() => {
-    handlerRef.current = handler;
-  });
+  const handlerRef = useLatestRef(handler);
 
   useEffect(() => {
     if (!enabled) return;
@@ -27,5 +25,5 @@ export function useOnClickOutside<T extends HTMLElement>(
       document.removeEventListener('pointerdown', listener, true);
       document.removeEventListener('focusin', listener, true);
     };
-  }, [ref, enabled]);
+  }, [ref, enabled, handlerRef]);
 }

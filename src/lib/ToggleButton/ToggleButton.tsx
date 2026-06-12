@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import { useControllableState } from '../shared/useControllableState';
-import { mergeProps } from '../shared/props';
+import { mergeProps, stripReserved } from '../shared/props';
 import { makeSlots } from '../shared/slots';
 import { cx } from '../shared/cx';
 import styles from './ToggleButton.module.css';
@@ -11,8 +11,17 @@ type ToggleButtonPart = 'root' | 'label' | 'track' | 'thumb';
 export interface ToggleButtonProps
   extends Omit<
     React.ButtonHTMLAttributes<HTMLButtonElement>,
-    // Reserved: these are managed by the component and cannot be overridden.
-    'onChange' | 'type' | 'role' | 'aria-pressed' | 'aria-checked' | 'className' | 'style'
+    // Reserved: these are managed by the component and cannot be overridden. Labelling
+    // attributes (aria-label/aria-labelledby/aria-describedby) intentionally stay open.
+    | 'onChange'
+    | 'type'
+    | 'role'
+    | 'tabIndex'
+    | 'aria-hidden'
+    | 'aria-pressed'
+    | 'aria-checked'
+    | 'className'
+    | 'style'
   > {
   /** "switch" uses role=switch + aria-checked; "button" uses aria-pressed. Default: "button". */
   variant?: 'button' | 'switch';
@@ -52,7 +61,8 @@ export const ToggleButton = forwardRef<HTMLButtonElement, ToggleButtonProps>(
     const slot = makeSlots<ToggleButtonPart>();
 
     // a11y-critical + behavioral props. mergeProps lets a consumer's handlers (in `rest`)
-    // chain with these without replacing role/aria/type or the toggle handler.
+    // chain with these without replacing role/aria/type or the toggle handler;
+    // stripReserved keeps a cast from smuggling reserved attributes past the types.
     const libProps = {
       type: 'button' as const,
       ...slot('root', cx(styles.toggle, isSwitch && styles.switch), isPressed ? 'on' : 'off'),
@@ -63,7 +73,7 @@ export const ToggleButton = forwardRef<HTMLButtonElement, ToggleButtonProps>(
     };
 
     return (
-      <button ref={ref} {...mergeProps(libProps, rest)}>
+      <button ref={ref} {...mergeProps(libProps, stripReserved(rest))}>
         {isSwitch ? (
           <>
             <span {...slot('label', styles.label)}>{children}</span>

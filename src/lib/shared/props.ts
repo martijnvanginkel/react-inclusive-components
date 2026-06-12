@@ -1,4 +1,3 @@
-import type { Ref } from 'react';
 import { cx } from './cx';
 
 type AnyProps = Record<string, unknown>;
@@ -26,15 +25,33 @@ export function composeEventHandlers<E>(
   };
 }
 
-/** Combines multiple refs (callback or object) into one ref callback. */
-export function composeRefs<T>(...refs: Array<Ref<T> | undefined>) {
-  return (node: T | null) => {
-    for (const ref of refs) {
-      if (!ref) continue;
-      if (typeof ref === 'function') ref(node);
-      else (ref as { current: T | null }).current = node;
-    }
-  };
+/**
+ * Attributes a consumer must never be able to set where native props are forwarded
+ * (CC-12): semantics/visibility (`type`, `role`, `tabIndex`, `aria-hidden`), the state
+ * attributes the components manage, and the styling props the library doesn't accept.
+ * Labelling attributes (`aria-label`, `aria-labelledby`, `aria-describedby`) stay open —
+ * naming a control is the consumer's job.
+ */
+const RESERVED_ATTRS = [
+  'type',
+  'role',
+  'tabIndex',
+  'aria-hidden',
+  'aria-pressed',
+  'aria-checked',
+  'className',
+  'style',
+] as const;
+
+/**
+ * Strips {@link RESERVED_ATTRS} from forwarded consumer props. The prop types already
+ * `Omit` these; this runtime strip backs the types up so a forced cast can't reintroduce
+ * them (CC-12: "reserved a11y attributes must win at runtime if forced").
+ */
+export function stripReserved(props: AnyProps): AnyProps {
+  const safe = { ...props };
+  for (const key of RESERVED_ATTRS) delete safe[key];
+  return safe;
 }
 
 /**

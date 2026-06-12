@@ -24,9 +24,10 @@ export interface ToggletipProps {
  */
 export function Toggletip({ content, label = 'more information', children = 'i' }: ToggletipProps) {
   const [open, setOpen] = useState(false);
-  // Mirror of `content` placed into the live region, with a delay so the DOM mutation
-  // is detected as an addition and announced.
-  const [liveContent, setLiveContent] = useState<React.ReactNode>(null);
+  // The live region is populated after a short delay so the DOM mutation is detected
+  // as an addition and announced. Only this flag is delayed — the rendered content is
+  // always the current `content` prop, so updates while open stay live.
+  const [populated, setPopulated] = useState(false);
   const wrapperRef = useRef<HTMLSpanElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const slot = makeSlots<ToggletipPart>();
@@ -37,7 +38,7 @@ export function Toggletip({ content, label = 'more information', children = 'i' 
   const close = () => {
     clearTimeout(timerRef.current);
     setOpen(false);
-    setLiveContent(null);
+    setPopulated(false);
   };
 
   const toggle = () => {
@@ -49,8 +50,8 @@ export function Toggletip({ content, label = 'more information', children = 'i' 
     // detect the addition and announce it.
     clearTimeout(timerRef.current);
     setOpen(true);
-    setLiveContent(null);
-    timerRef.current = setTimeout(() => setLiveContent(content), 100);
+    setPopulated(false);
+    timerRef.current = setTimeout(() => setPopulated(true), 100);
   };
 
   useEscapeKey(close, open);
@@ -59,7 +60,7 @@ export function Toggletip({ content, label = 'more information', children = 'i' 
   const state = open ? 'open' : 'closed';
   // The bubble only becomes visible once the (SR-delayed) content is in place, so the
   // chrome (background + arrow) and the text appear together rather than arrow-first.
-  const visible = open && liveContent !== null;
+  const visible = open && populated;
 
   return (
     <span ref={wrapperRef} {...slot('root', styles.wrapper)}>
@@ -72,12 +73,8 @@ export function Toggletip({ content, label = 'more information', children = 'i' 
       >
         {children}
       </button>
-      <span
-        role="status"
-        {...slot('bubble', styles.bubble, visible ? 'open' : 'closed')}
-        data-open={visible}
-      >
-        {open ? liveContent : null}
+      <span role="status" {...slot('bubble', styles.bubble, visible ? 'open' : 'closed')}>
+        {visible ? content : null}
       </span>
     </span>
   );

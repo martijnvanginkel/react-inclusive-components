@@ -55,8 +55,14 @@ restyle exclusively from their own CSS, via design tokens and the `data-ic-*` ho
   CSS declared outside a layer overrides it without specificity/`!important` hacks.
 - **CC-14** Every element MUST expose a stable `data-ic-part`; stateful elements MUST expose
   `data-ic-state` so consumers can style states WITHOUT targeting ARIA attributes.
+  (Purely decorative leaf content inside an already-hooked part — e.g. an icon glyph or
+  SVG path — may rely on its parent's hook.)
 - **CC-15** *(Removed 2026-06: the `className`/`classNames`/`style` props were dropped from
   all components. The ID is retired, not reused.)*
+- **CC-16** When multiple dismissible widgets are open, one Escape press MUST dismiss at
+  most one of them (the one that handles the event first — innermost for element-scoped
+  handlers). Escape handlers MUST skip events already claimed (`event.defaultPrevented`)
+  and MUST claim (`preventDefault()`) the events they consume.
 
 ---
 
@@ -136,9 +142,14 @@ Usage constraints (anti-patterns — enforced by review, not unit-testable)
   article does not mandate a button; focusability is the actual requirement.
 - **TT-5** The `title` attribute MUST NOT be used (CC-6).
 - **TT-6** The tooltip's `id` MUST match the value referenced by the trigger's ARIA attribute.
-- **TT-7** The tooltip MUST be dismissible with Escape while leaving the trigger usable (WCAG 1.4.13).
+- **TT-7** The tooltip MUST be dismissible with Escape while leaving the trigger usable
+  (WCAG 1.4.13) — including when shown only by hover, with focus elsewhere on the page
+  (handled at the document level, not via the trigger's own keydown).
 - **TT-8** The tooltip MUST NOT contain interactive content (links, buttons, close handlers).
   *(Content guideline — `content` is a plain string by type; enforced by review, not unit-tested.)*
+- **TT-9** Hover and focus MUST be tracked independently: a tooltip shown by focus stays
+  visible while the trigger remains focused, regardless of pointer movement (WCAG 1.4.13
+  "persistent").
 
 ## 6. Toggletip — `Toggletip`
 
@@ -273,8 +284,8 @@ Usage constraints (anti-patterns — enforced by review, not unit-testable)
 - **DT-3** The table MUST be labelled with a `<caption>` (superior to a preceding heading; a
   heading may be placed inside the caption).
 - **DT-4** Wide tables get a scrollable wrapper (`overflow-x: auto`) that becomes focusable
-  (`tabindex="0"`) ONLY when content actually overflows — checked on mount via
-  `scrollWidth > clientWidth`.
+  (`tabindex="0"`) ONLY when content actually overflows — checked via
+  `scrollWidth > clientWidth` on mount, on window resize, and when the data props change.
 - **DT-5** The scrollable wrapper MUST have `role="group"` and `aria-labelledby` pointing at
   the caption's id, so the focus stop has a name and a role.
 - **DT-6** When overflowing, a "(scroll to see more)" hint MUST appear with the caption.
@@ -286,6 +297,10 @@ Usage constraints (anti-patterns — enforced by review, not unit-testable)
   heading, column `<th>` → `<dt>`, `<td>` → `<dd>`), toggled at a breakpoint — not rebuilt
   in the DOM at runtime.
 - **DT-10** Plain data tables MUST NOT use `role="grid"` or grid-style cell keyboard behavior.
+- **DT-11** The sort comparator MUST be a consistent total order even for mixed-type
+  columns: numbers compare numerically and sort before strings; strings compare via
+  numeric-aware collation (so `"2"` < `"10"`). A non-transitive comparator makes the
+  sorted order depend on the input order.
 
 ## 12. Notifications — `NotificationProvider` / `useNotify`
 

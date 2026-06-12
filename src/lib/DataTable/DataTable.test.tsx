@@ -90,6 +90,21 @@ describe('DataTable', () => {
     expect(firstDataRow).toHaveTextContent('Mars'); // 3390 is the smallest radius
   });
 
+  it('DT-11: mixed number/string columns sort consistently (numbers first, natural string order)', async () => {
+    const user = userEvent.setup();
+    const rows: Array<Array<string | number>> = [
+      ['a', '10'],
+      ['b', '2'],
+      ['c', 5],
+      ['d', 'n/a'],
+    ];
+    render(<DataTable caption="Scores" headers={['Name', 'Score']} rows={rows} sortable />);
+    await user.click(screen.getByRole('button', { name: 'sort by Score in ascending order' }));
+    const dataRows = within(screen.getByRole('table')).getAllByRole('row').slice(1);
+    // 5 (number) before the strings; '2' < '10' via numeric-aware collation; 'n/a' last.
+    expect(dataRows.map((r) => r.textContent)).toEqual(['c5', 'b2', 'a10', 'dn/a']);
+  });
+
   it('DT-8: sorting does not mutate the consumer rows array', async () => {
     const user = userEvent.setup();
     const rows = ROWS.map((r) => r.slice(0));

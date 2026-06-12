@@ -56,6 +56,20 @@ describe('TodoList', () => {
     expect(input).toHaveFocus(); // user can keep typing
   });
 
+  it('TD-7 (regression): repeating the same action still mutates the live region', async () => {
+    const user = userEvent.setup();
+    render(<TodoList />);
+    const input = screen.getByRole('textbox');
+    await user.type(input, 'Milk{Enter}');
+    const first = getStatus().textContent;
+    expect(first).toContain('Milk added');
+    await user.type(input, 'Milk{Enter}');
+    const second = getStatus().textContent;
+    expect(second).toContain('Milk added');
+    // Identical raw text would be skipped by screen readers — the DOM must change.
+    expect(second).not.toBe(first);
+  });
+
   it('TD-8: each item has a real checkbox paired with a label, toggling done state', async () => {
     const user = userEvent.setup();
     render(<TodoList defaultItems={['Buy milk']} />);

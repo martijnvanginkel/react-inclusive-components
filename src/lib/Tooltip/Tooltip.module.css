@@ -31,7 +31,7 @@
     transition: opacity 0.12s ease;
   }
 
-  .tooltip[data-open='true'] {
+  .tooltip[data-ic-state='open'] {
     opacity: 1;
     visibility: visible;
   }

@@ -47,7 +47,7 @@
   }
 
   /* Closed: removed from view AND layout. Empty live region stays in the DOM. */
-  .bubble:not([data-open='true']) {
+  .bubble:not([data-ic-state='open']) {
     display: none;
   }
 

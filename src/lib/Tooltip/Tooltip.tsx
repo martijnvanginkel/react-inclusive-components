@@ -1,4 +1,5 @@
-import { cloneElement, useId, useRef, useState, type ReactElement } from 'react';
+import { cloneElement, useId, useState, type ReactElement } from 'react';
+import { useEscapeKey } from '../shared/useEscapeKey';
 import { makeSlots } from '../shared/slots';
 import styles from './Tooltip.module.css';
 
@@ -24,39 +25,40 @@ export interface TooltipProps {
 
 /**
  * A label/description shown on hover AND focus of its trigger, with `role="tooltip"`.
- * Dismissible with Escape (WCAG 1.4.13). Never uses the `title` attribute. The trigger
- * must be a focusable control.
+ * Hover and focus are tracked independently, so mousing away never hides a tooltip
+ * whose trigger is still focused (TT-9). Dismissible with Escape — document-level, so
+ * it works for hover-only tooltips too (TT-7, WCAG 1.4.13). Never uses the `title`
+ * attribute. The trigger must be a focusable control.
  */
 export function Tooltip({ content, relation = 'label', children }: TooltipProps) {
   const id = useId();
-  const [visible, setVisible] = useState(false);
-  // Escape suppresses the tooltip until the pointer/focus leaves and returns.
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  // Escape suppresses the tooltip until the pointer AND focus have both left (TT-7).
   const [dismissed, setDismissed] = useState(false);
-  const wrapperRef = useRef<HTMLSpanElement>(null);
   const slot = makeSlots<TooltipPart>();
 
-  const show = () => setVisible(true);
-  const hide = () => {
-    setVisible(false);
-    setDismissed(false);
-  };
+  const open = (hovered || focused) && !dismissed;
+
+  // Document-level: a hover-only tooltip (focus elsewhere) must still dismiss (TT-7).
+  useEscapeKey(() => setDismissed(true), open);
 
   const trigger = cloneElement(children, {
     [relation === 'label' ? 'aria-labelledby' : 'aria-describedby']: id,
   });
 
-  const open = visible && !dismissed;
-
   return (
     <span
-      ref={wrapperRef}
       {...slot('root', styles.wrapper)}
-      onMouseEnter={show}
-      onMouseLeave={hide}
-      onFocusCapture={show}
-      onBlurCapture={hide}
-      onKeyDown={(event) => {
-        if (event.key === 'Escape' && visible) setDismissed(true);
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => {
+        setHovered(false);
+        if (!focused) setDismissed(false);
+      }}
+      onFocusCapture={() => setFocused(true)}
+      onBlurCapture={() => {
+        setFocused(false);
+        if (!hovered) setDismissed(false);
       }}
     >
       {trigger}
@@ -65,7 +67,6 @@ export function Tooltip({ content, relation = 'label', children }: TooltipProps)
         id={id}
         {...slot('tooltip', styles.tooltip, open ? 'open' : 'closed')}
         // Keep it in the DOM (so aria-labelledby always resolves) but hidden when closed.
-        data-open={open}
         aria-hidden={!open}
       >
         {content}

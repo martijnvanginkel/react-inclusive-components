@@ -22,7 +22,8 @@ type TodoListPart =
   | 'checkbox'
   | 'itemLabel'
   | 'deleteButton'
-  | 'emptyState';
+  | 'emptyState'
+  | 'liveRegion';
 
 export interface TodoListProps {
   /** Heading text labelling the whole component. Default: "My todo list". */
@@ -71,14 +72,23 @@ export function TodoList({
 
   const [text, setText] = useState('');
   const [announcement, setAnnouncement] = useState('');
+  const announceFlip = useRef(false);
   const valid = text.trim().length > 0;
+
+  // Alternate a trailing non-breaking space (invisible, not read by AT) so a repeated identical
+  // message still mutates the DOM text node — identical text would mean no mutation,
+  // and the live region would silently skip the second announcement (TD-7/TD-11).
+  const announce = (message: string) => {
+    announceFlip.current = !announceFlip.current;
+    setAnnouncement(announceFlip.current ? message : message + '\u00A0');
+  };
 
   const onSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (!valid) return;
     const item: TodoItem = { id: `${baseId}-new-${counter.current++}`, text: text.trim(), done: false };
     setList([...list, item]);
-    setAnnouncement(`${item.text} added`);
+    announce(`${item.text} added`);
     setText('');
     // Focus stays in the input so the user can keep adding items (TD-7).
   };
@@ -89,7 +99,7 @@ export function TodoList({
 
   const remove = (item: TodoItem) => {
     setList(list.filter((i) => i.id !== item.id));
-    setAnnouncement(`${item.text} deleted`);
+    announce(`${item.text} deleted`);
     // The deleted item may have held focus — move it to the heading (TD-10).
     headingRef.current?.focus();
   };
@@ -149,7 +159,7 @@ export function TodoList({
       {list.length === 0 && <p {...slot('emptyState', styles.emptyState)}>{emptyState}</p>}
 
       {/* Announces add/delete without moving focus (TD-7/TD-11). */}
-      <span role="status" aria-live="polite" className={vh.visuallyHidden}>
+      <span role="status" aria-live="polite" {...slot('liveRegion', vh.visuallyHidden)}>
         {announcement}
       </span>
     </section>
