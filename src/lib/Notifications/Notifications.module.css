@@ -1,0 +1,53 @@
+/* All library styles live in the ic.base cascade layer, so any consumer CSS
+   declared outside a layer overrides them regardless of specificity or order. */
+@layer ic.base {
+  .region {
+    position: fixed;
+    top: var(--ic-space-4);
+    right: var(--ic-space-4);
+    z-index: 50;
+    font-family: var(--ic-font);
+    pointer-events: none; /* notifications are non-interactive; clicks pass through */
+  }
+
+  .list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--ic-space-2);
+  }
+
+  .item {
+    max-width: 22rem;
+    padding: var(--ic-space-3) var(--ic-space-4);
+    border: 1px solid var(--ic-border);
+    border-left: 4px solid var(--ic-text);
+    border-radius: var(--ic-radius-sm);
+    background: var(--ic-surface);
+    color: var(--ic-text);
+    box-shadow: var(--ic-shadow);
+    line-height: var(--ic-line);
+  }
+
+  /* The textual prefix is the real differentiator (NT-5/CC-4); the colors are auxiliary. */
+  .item[data-ic-state='info'] {
+    border-left-color: #a07d00;
+    background: #fdf6dd;
+  }
+
+  .item[data-ic-state='success'] {
+    border-left-color: #2e6b33;
+    background: #e9f2ea;
+  }
+
+  .item[data-ic-state='error'] {
+    border-left-color: var(--ic-danger);
+    background: #faeae8;
+  }
+
+  .prefix {
+    font-weight: 700;
+  }
+}

@@ -1,0 +1,124 @@
+/* All library styles live in the ic.base cascade layer, so any consumer CSS
+   declared outside a layer overrides them regardless of specificity or order. */
+@layer ic.base {
+  .root {
+    font-family: var(--ic-font);
+    color: var(--ic-text);
+  }
+
+  .scroller {
+    overflow-x: auto;
+  }
+
+  .scroller:focus-visible {
+    outline: none;
+    box-shadow: var(--ic-focus-ring);
+    border-radius: var(--ic-radius-sm);
+  }
+
+  .table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  .caption {
+    text-align: left;
+    font-weight: 600;
+    padding-bottom: var(--ic-space-2);
+  }
+
+  /* The scroll hint shows only while the wrapper actually overflows (DT-6). */
+  .hint {
+    display: none;
+    font-weight: 400;
+    color: var(--ic-text-muted);
+  }
+
+  .scroller[data-overflowing='true'] .hint {
+    display: inline;
+  }
+
+  .headerCell {
+    text-align: left;
+    border-bottom: 2px solid var(--ic-text);
+    padding: var(--ic-space-2) var(--ic-space-3);
+  }
+
+  .sortButton {
+    font: inherit;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ic-space-1);
+    border: none;
+    background: none;
+    color: var(--ic-text);
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .sortButton:focus-visible {
+    outline: none;
+    box-shadow: var(--ic-focus-ring);
+    border-radius: var(--ic-radius-sm);
+  }
+
+  .sortIcon {
+    color: var(--ic-text-muted);
+  }
+
+  .headerCell[data-ic-state] .sortIcon {
+    color: var(--ic-text);
+  }
+
+  .rowHeader {
+    text-align: left;
+    padding: var(--ic-space-2) var(--ic-space-3);
+    border-bottom: 1px solid var(--ic-border);
+  }
+
+  .cell {
+    padding: var(--ic-space-2) var(--ic-space-3);
+    border-bottom: 1px solid var(--ic-border);
+  }
+
+  /* Narrow-viewport stack: hidden by default; swaps with the table at the breakpoint. */
+  .stack {
+    display: none;
+  }
+
+  @media (max-width: 25rem) {
+    .scroller {
+      display: none;
+    }
+
+    .stack {
+      display: block;
+    }
+  }
+
+  .stackGroup {
+    padding: var(--ic-space-3) 0;
+    border-bottom: 1px solid var(--ic-border);
+  }
+
+  .stackHeading {
+    margin: 0 0 var(--ic-space-2);
+    font-size: 1rem;
+  }
+
+  .stackList {
+    margin: 0;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--ic-space-1) var(--ic-space-3);
+  }
+
+  .stackList dt {
+    font-weight: 600;
+  }
+
+  .stackList dd {
+    margin: 0;
+  }
+}

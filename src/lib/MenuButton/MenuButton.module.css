@@ -1,0 +1,83 @@
+/* All library styles live in the ic.base cascade layer, so any consumer CSS
+   declared outside a layer overrides them regardless of specificity or order. */
+@layer ic.base {
+  .root {
+    position: relative;
+    display: inline-block;
+    font-family: var(--ic-font);
+  }
+
+  .trigger {
+    font: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ic-space-2);
+    padding: var(--ic-space-2) var(--ic-space-4);
+    border: 1px solid var(--ic-border);
+    border-radius: var(--ic-radius);
+    background: var(--ic-surface);
+    color: var(--ic-text);
+    cursor: pointer;
+  }
+
+  .trigger:focus-visible {
+    outline: none;
+    box-shadow: var(--ic-focus-ring);
+  }
+
+  .caret {
+    font-size: 0.7em;
+  }
+
+  .menu {
+    position: absolute;
+    top: calc(100% + var(--ic-space-1));
+    left: 0;
+    z-index: 20;
+    min-width: 12rem;
+    padding: var(--ic-space-1);
+    margin: 0;
+    border: 1px solid var(--ic-border);
+    border-radius: var(--ic-radius);
+    background: var(--ic-surface);
+    box-shadow: var(--ic-shadow-lg);
+  }
+
+  .item {
+    font: inherit;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: var(--ic-space-2);
+    padding: var(--ic-space-2) var(--ic-space-3);
+    border: none;
+    border-radius: var(--ic-radius-sm);
+    background: none;
+    color: var(--ic-text);
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .item:hover:not(:disabled),
+  .item:focus {
+    outline: none;
+    background: var(--ic-accent-weak);
+  }
+
+  .item:disabled {
+    color: var(--ic-text-muted);
+    cursor: not-allowed;
+  }
+
+  /* Checkmark for menuitemradio — paired with aria-checked, not a substitute for it. */
+  .check {
+    width: 1rem;
+    flex: none;
+    text-align: center;
+  }
+
+  .check[data-ic-state='checked']::before {
+    content: '✓';
+    color: var(--ic-accent);
+  }
+}

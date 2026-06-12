@@ -1,0 +1,74 @@
+/* All library styles live in the ic.base cascade layer, so any consumer CSS
+   declared outside a layer overrides them regardless of specificity or order. */
+@layer ic.base {
+  .root {
+    font-family: var(--ic-font);
+    color: var(--ic-text);
+  }
+
+  .list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ic-space-1);
+    border-bottom: 2px solid var(--ic-border);
+  }
+
+  .tab {
+    font: inherit;
+    font-weight: 600;
+    padding: var(--ic-space-2) var(--ic-space-4);
+    border: none;
+    background: none;
+    color: var(--ic-text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+  }
+
+  .tab:hover {
+    color: var(--ic-text);
+  }
+
+  /* Inset ring: an outer ring would sit on top of the active tab's bottom border and the
+     list rule. Drawing it inside the tab keeps the two indicators visually separate.
+     No border-radius here: rounding the button would also curl the tab's bottom border. */
+  .tab:focus-visible {
+    outline: 2px solid var(--ic-text);
+    outline-offset: -4px;
+  }
+
+  .tab[aria-selected='true'] {
+    color: var(--ic-accent);
+    border-bottom-color: var(--ic-accent);
+  }
+
+  .panel {
+    padding: var(--ic-space-4) var(--ic-space-1);
+    line-height: var(--ic-line);
+  }
+
+  .panel:focus-visible {
+    outline: none;
+    box-shadow: var(--ic-focus-ring);
+    border-radius: var(--ic-radius-sm);
+  }
+
+  /* Narrow viewports: stack tabs vertically — they no longer read as a tab strip. */
+  @media (max-width: 30rem) {
+    .list {
+      flex-direction: column;
+      border-bottom: none;
+      gap: 0;
+    }
+
+    .tab {
+      margin-bottom: 0;
+      border-bottom: 1px solid var(--ic-border);
+      text-align: left;
+    }
+
+    .tab[aria-selected='true'] {
+      border-bottom-color: var(--ic-accent);
+    }
+  }
+}

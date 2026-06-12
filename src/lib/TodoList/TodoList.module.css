@@ -1,0 +1,129 @@
+/* All library styles live in the ic.base cascade layer, so any consumer CSS
+   declared outside a layer overrides them regardless of specificity or order. */
+@layer ic.base {
+  .root {
+    font-family: var(--ic-font);
+    color: var(--ic-text);
+    max-width: 28rem;
+  }
+
+  .heading {
+    margin: 0 0 var(--ic-space-3);
+    font-size: 1.25rem;
+  }
+
+  .heading:focus {
+    outline: none;
+  }
+
+  .form {
+    display: flex;
+    gap: var(--ic-space-2);
+    margin-bottom: var(--ic-space-4);
+  }
+
+  .input {
+    font: inherit;
+    flex: 1;
+    padding: var(--ic-space-2) var(--ic-space-3);
+    border: 1px solid var(--ic-border);
+    border-radius: var(--ic-radius-sm);
+    color: var(--ic-text);
+    background: var(--ic-surface);
+  }
+
+  /* Placeholder needs enough contrast (WCAG 1.4.3) and is never the sole label. */
+  .input::placeholder {
+    color: var(--ic-text-muted);
+    font-style: italic;
+  }
+
+  .input:focus-visible {
+    outline: none;
+    box-shadow: var(--ic-focus-ring);
+  }
+
+  .addButton {
+    font: inherit;
+    padding: var(--ic-space-2) var(--ic-space-4);
+    border: 1px solid var(--ic-border);
+    border-radius: var(--ic-radius-sm);
+    background: var(--ic-surface);
+    color: var(--ic-text);
+    cursor: pointer;
+  }
+
+  .addButton:disabled {
+    color: var(--ic-text-muted);
+    cursor: not-allowed;
+  }
+
+  .addButton:focus-visible {
+    outline: none;
+    box-shadow: var(--ic-focus-ring);
+  }
+
+  .list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .item {
+    display: flex;
+    align-items: center;
+    gap: var(--ic-space-2);
+    padding: var(--ic-space-2) 0;
+    border-bottom: 1px solid var(--ic-border);
+  }
+
+  .checkbox {
+    width: 1.1rem;
+    height: 1.1rem;
+    flex: none;
+  }
+
+  .checkbox:focus-visible {
+    outline: none;
+    box-shadow: var(--ic-focus-ring);
+  }
+
+  .itemLabel {
+    flex: 1;
+  }
+
+  /* Done state: strikethrough via :checked — not conveyed by color alone (TD-8). */
+  .checkbox:checked + .itemLabel {
+    text-decoration: line-through;
+    color: var(--ic-text-muted);
+  }
+
+  .deleteButton {
+    font: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border: 1px solid transparent;
+    border-radius: var(--ic-radius-sm);
+    background: none;
+    color: var(--ic-text-muted);
+    cursor: pointer;
+  }
+
+  .deleteButton:hover {
+    color: var(--ic-danger);
+    border-color: var(--ic-border);
+  }
+
+  .deleteButton:focus-visible {
+    outline: none;
+    box-shadow: var(--ic-focus-ring);
+  }
+
+  .emptyState {
+    color: var(--ic-text-muted);
+    font-style: italic;
+  }
+}

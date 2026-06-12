@@ -1,0 +1,63 @@
+/* All library styles live in the ic.base cascade layer, so any consumer CSS
+   declared outside a layer overrides them regardless of specificity or order. */
+@layer ic.base {
+  .wrapper {
+    position: relative;
+    display: inline-flex;
+    font-family: var(--ic-font);
+  }
+
+  .trigger {
+    font: inherit;
+    font-weight: 700;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--ic-border);
+    border-radius: 50%;
+    background: var(--ic-surface);
+    color: var(--ic-text);
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  .trigger:focus-visible {
+    outline: none;
+    box-shadow: var(--ic-focus-ring);
+  }
+
+  .bubble {
+    position: absolute;
+    bottom: calc(100% + var(--ic-space-2));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    width: max-content;
+    max-width: 18rem;
+    padding: var(--ic-space-3);
+    border-radius: var(--ic-radius-sm);
+    background: var(--ic-text);
+    color: var(--ic-bg);
+    font-size: 0.875rem;
+    line-height: 1.4;
+    box-shadow: var(--ic-shadow);
+    text-align: left;
+  }
+
+  /* Closed: removed from view AND layout. Empty live region stays in the DOM. */
+  .bubble:not([data-ic-state='open']) {
+    display: none;
+  }
+
+  .bubble::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: var(--ic-text);
+  }
+}

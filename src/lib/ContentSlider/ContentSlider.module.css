@@ -1,0 +1,121 @@
+/* All library styles live in the ic.base cascade layer, so any consumer CSS
+   declared outside a layer overrides them regardless of specificity or order. */
+@layer ic.base {
+  .root {
+    font-family: var(--ic-font);
+    color: var(--ic-text);
+  }
+
+  .scroller {
+    overflow-x: scroll;
+    border: 1px solid var(--ic-border);
+    border-radius: var(--ic-radius-sm);
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scroller {
+      scroll-behavior: auto;
+    }
+  }
+
+  .scroller:focus-visible {
+    outline: none;
+    box-shadow: var(--ic-focus-ring);
+  }
+
+  .list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: nowrap;
+  }
+
+  .slide {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+  }
+
+  .figure {
+    margin: 0;
+    height: 18rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--ic-space-2);
+    padding: var(--ic-space-3);
+  }
+
+  .image {
+    max-width: 100%;
+    max-height: calc(100% - 2rem);
+    object-fit: contain;
+  }
+
+  .captionText {
+    font-size: 0.9rem;
+    color: var(--ic-text-muted);
+  }
+
+  /* Instructions: hidden by default, the relevant one shows per input modality (CS-4).
+     Being display:none doesn't stop aria-describedby resolving the focus instruction. */
+  .instructions {
+    min-height: 1.5rem;
+    margin-top: var(--ic-space-2);
+    font-size: 0.875rem;
+    color: var(--ic-text-muted);
+  }
+
+  .instructions p {
+    display: none;
+    margin: 0;
+  }
+
+  .scroller:hover ~ .instructions .hoverInstruction {
+    display: block;
+  }
+
+  .scroller:focus ~ .instructions .focusInstruction {
+    display: block;
+  }
+
+  /* Touch detected: the swipe message takes precedence. */
+  .instructions[data-touch='true'] .touchInstruction {
+    display: block;
+  }
+
+  .instructions[data-touch='true'] .hoverInstruction,
+  .instructions[data-touch='true'] .focusInstruction {
+    display: none;
+  }
+
+  .controls {
+    list-style: none;
+    margin: var(--ic-space-2) 0 0;
+    padding: 0;
+    display: flex;
+    gap: var(--ic-space-2);
+  }
+
+  .controlButton {
+    font: inherit;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--ic-border);
+    border-radius: var(--ic-radius-sm);
+    background: var(--ic-surface);
+    color: var(--ic-text);
+    cursor: pointer;
+  }
+
+  .controlButton:focus-visible {
+    outline: none;
+    box-shadow: var(--ic-focus-ring);
+  }
+}

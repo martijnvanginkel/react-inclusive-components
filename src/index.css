@@ -1,0 +1,170 @@
+/* Global styles for the showcase pages (NOT part of the library).
+   Deliberately plain: a single centered column, system font, black on white,
+   underlined links — in the spirit of inclusive-components.design. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 112.5%; /* ~18px base for comfortable reading */
+  line-height: 1.6;
+  color: #111;
+  background: #fff;
+}
+
+body {
+  margin: 0;
+}
+
+/* The single readable column. */
+main {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 5rem;
+}
+
+/* Page typography — scoped AWAY from library component internals. Unlayered CSS here
+   beats the library's @layer styles (the consumer-wins contract), so without the
+   :not([data-ic-part] *) guard these rules would restyle headings/paragraphs INSIDE
+   components (e.g. a Collapsible's wrapped <h2> got the 2.5rem page-heading margin). */
+h1:not([data-ic-part] *) {
+  font-size: 2rem;
+  line-height: 1.2;
+  margin: 0 0 1rem;
+}
+
+h2:not([data-ic-part] *) {
+  font-size: 1.4rem;
+  line-height: 1.25;
+  margin: 2.5rem 0 0.75rem;
+}
+
+h3:not([data-ic-part] *) {
+  font-size: 1.15rem;
+  margin: 2rem 0 0.5rem;
+}
+
+p:not([data-ic-part] *) {
+  margin: 0 0 1rem;
+}
+
+a {
+  color: #1a0dab;
+}
+
+a:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: 2px;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #ccc;
+  margin: 2rem 0;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+  background: #f0f0f0;
+  padding: 0.1em 0.3em;
+  border-radius: 3px;
+}
+
+/* Homepage component index. */
+ul.index {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+}
+
+ul.index li {
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+ul.index a {
+  font-weight: 600;
+}
+
+/* Skip link. */
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  padding: 0.5rem 1rem;
+  background: #111;
+  color: #fff;
+  transition: top 0.15s ease;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* --- Demo helper classes used inside component pages --- */
+.note {
+  color: #555;
+}
+
+/* Visible feedback line for demos (e.g. which menu action was picked). */
+.status {
+  margin: 1rem 0;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid #999;
+  border-left: 4px solid #111;
+  border-radius: 4px;
+  background: #f6f6f6;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+  margin: 1rem 0;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.plainBtn {
+  font: inherit;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid #999;
+  border-radius: 4px;
+  background: #fff;
+  color: #111;
+  cursor: pointer;
+}
+
+.plainBtn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #111;
+}
+
+.iconBtn {
+  font: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid #999;
+  border-radius: 4px;
+  background: #fff;
+  color: #111;
+  cursor: pointer;
+}
+
+.iconBtn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #111;
+}
